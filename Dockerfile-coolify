@@ -10,8 +10,8 @@ RUN npm install -g pnpm@9.1.2 wrangler
 # Copiar arquivos de dependência para o container
 COPY package.json pnpm-lock.yaml ./
 
-# Instalar dependências com pnpm
-RUN pnpm install
+# Instalar dependências com logs detalhados
+RUN pnpm install --reporter=ndjson --loglevel=debug
 
 # Copiar todo o restante do código-fonte para o container
 COPY . .
