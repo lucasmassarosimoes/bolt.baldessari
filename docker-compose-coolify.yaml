@@ -21,8 +21,12 @@ services:
       - AWS_BEDROCK_CONFIG=${AWS_BEDROCK_CONFIG}
       - VITE_LOG_LEVEL=${VITE_LOG_LEVEL:-debug}
       - DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX:-32768}
+      - RUNNING_IN_DOCKER=true
     restart: unless-stopped
+    env_file:
+      - .env
 
+  # ⚠️ Use esse service apenas se tiver um stage "bolt-ai-development" no seu Dockerfile
   app-dev:
     image: bolt-ai:development
     build:
@@ -53,10 +57,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      - type: bind
-        source: .
-        target: /app
-        consistency: cached
+      - .:/app:cached
       - /app/node_modules
     ports:
       - "5173:5173"
@@ -64,13 +65,12 @@ services:
     profiles: ["development", "default"]
 
   app-prebuild:
-    image: ghcr.io/stackblitz-labs/bolt.diy:latest 
+    image: ghcr.io/stackblitz-labs/bolt.diy:latest
     ports:
       - "5173:5173"
     environment:
       - NODE_ENV=production
       - COMPOSE_PROFILES=production
-      # No strictly needed but serving as hints for Coolify
       - PORT=5173
       - OLLAMA_API_BASE_URL=http://127.0.0.1:11434
       - DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX:-32768}
